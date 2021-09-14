@@ -4,8 +4,12 @@
     "api_version":"v3",
     "DEVELOPER_KEY":"",
     "order_by":"date",
-    "find_videos_for":"cricket",
-    "start_time":"2021-09-14T16:00:00Z",
-    "type":"video"
+    "find_videos_for":["service helpline", "100% copper", "power gaurantee aer"],
+    "type":"video",
+    "mongodb_url":"mongodb://localhost:27017/",
+    "mongo_coll_config": "query_details",
+    "mongo_coll_data": "",
+    "mongo_db_name":"youtube_feed",
+    "max_results":50
 
 }
