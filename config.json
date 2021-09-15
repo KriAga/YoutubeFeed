@@ -2,7 +2,7 @@
     "scopes":["https://www.googleapis.com/auth/youtube.readonly"],
     "api_service_name":"youtube",
     "api_version":"v3",
-    "DEVELOPER_KEY":"",
+    "DEVELOPER_KEY":[""],
     "order_by":"date",
     "find_videos_for":["service helpline", "100% copper", "power gaurantee aer"],
     "type":"video",
