@@ -2,15 +2,17 @@ import os
 import json
 import googleapiclient.discovery
 import googleapiclient.errors
-from apiclient.discovery import build
+import apiclient
+from googleapiclient.discovery import build
 from apscheduler.schedulers.background import BackgroundScheduler
 from flask import Flask
 import pymongo
+from pymongo import UpdateOne
 from video import Video
 import time
 from datetime import datetime, timedelta
 
-# config file that stores all the query paramters and api keys
+# config file that stores all the search_term paramters and api keys
 config = json.load(open('config.json'))
 
 # connecting to mongodb database
@@ -23,12 +25,13 @@ def init_db():
     # inserting current time as the first published time for all the queries
     docs=[]
     for query_string in config['find_videos_for']: # Allowing multiple queries to be made
-        docs.append({'query_string':query_string, "start_time": int(time.time())})
-    mongo_config.insert_many(docs)
+        docs.append({'_id':query_string, "start_time": int(time.time())})
+    upserts=[ UpdateOne({'_id':doc['_id']}, {'$setOnInsert':doc}, upsert=True) for doc in docs]
+    mongo_config.bulk_write(upserts)
 
 
-def insert_db():
-    print("inserted")
+def insert_db(video_details):
+    print("inserted", video_details['title'])
     pass
 
 
@@ -36,32 +39,41 @@ def insert_db():
 def update_data():
     print('update_data')
 
-    for query in mongo_config.find():
-        # setting up the connection with youtube api
-        os.environ["OAUTHLIB_INSECURE_TRANSPORT"] = "1"
-        youtube = build(config['api_service_name'], config['api_version'], developerKey=config['DEVELOPER_KEY'])
+    for search_term in mongo_config.find():
+        key_worked = False # Flag to track if the key worked or not
+        for key in config['DEVELOPER_KEY']:
+            
+            try:
+                # setting up the connection with youtube api
+                youtube = build(config['api_service_name'], config['api_version'], developerKey=key)
+                # print(search_term['_id'], datetime.fromtimestamp(int(search_term['start_time'])).isoformat('T') +'Z')
+                # setting up the query parameters from the config file
+                request = youtube.search().list(
+                    part="snippet",
+                    order=config['order_by'],
+                    q=search_term['_id'],
+                    publishedAfter=datetime.fromtimestamp(int(search_term['start_time'])).isoformat('T') +'Z', # getting epoch from db and converting it to RFC 3339 formatted date-time value
+                    type=config['type'],
+                    maxResults=config['max_results'] # trying to get as many as results possible in just one call
+                )
+                response = request.execute()
+                key_worked = True
+            except apiclient.errors.HttpError as err:
+                print("Error with the key")
+                continue
 
-        # setting up the query parameters from the config file
-        request = youtube.search().list(
-            part="snippet",
-            order=config['order_by'],
-            q=query['query_string'],
-            publishedAfter=datetime.fromtimestamp(int(query['start_time'])).isoformat('T') +'Z', # getting epoch from db and converting it to RFC 3339 formatted date-time value
-            type=config['type'],
-            maxResults=config['max_results'] # trying to get as many as results possible in just one call
-        )
-        response = request.execute()
+            if key_worked:
+                # iterating on all the item/video results
+                for response_obj in response['items']:
+                    video_obj = Video(response_obj['snippet']['title'], 
+                        response_obj['snippet']['description'], 
+                        response_obj['snippet']['publishTime'], 
+                        response_obj['snippet']['thumbnails'])
+                    # print(video_obj.title)
+                    insert_db(video_obj.__dict__)
 
-        # iterating on all the item/video results
-        for response_obj in response['items']:
-            video_obj = Video(response_obj['snippet']['title'], 
-                response_obj['snippet']['description'], 
-                response_obj['snippet']['publishTime'], 
-                response_obj['snippet']['thumbnails'])
-            # print(video_obj.title)
-            insert_db()
 
-        mongo_config.update({'query_string':query['query_string']}, {"$set":{'start_time':int(query['start_time'])+10}})
+        mongo_config.update_one({'_id':search_term['_id']}, {"$set":{'start_time':int(search_term['start_time'])+10}})
 
 
 # Schdeuler code to schedule the updation of the db every 10 seconds
@@ -79,5 +91,5 @@ def home():
 
 
 if __name__ == "__main__":
-    init_db() # initialising the db with the query params and the start_time 
+    init_db() # initialising the db with the search_term params and the start_time 
     app.run()
