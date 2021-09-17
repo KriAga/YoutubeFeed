@@ -1,16 +1,20 @@
 {
-    "scopes":["https://www.googleapis.com/auth/youtube.readonly"],
-    "api_service_name":"youtube",
-    "api_version":"v3",
-    "DEVELOPER_KEY":[""],
-    "order_by":"date",
-    "find_videos_for":["cricket"],
-    "type":"video",
-    "mongodb_url":"mongodb://localhost:27017/",
-    "mongo_coll_config": "query_details",
-    "mongo_coll_data": "query_data",
-    "mongo_db_name":"youtube_feed",
-    "max_results":50,
-    "update_interval": 10
-
-}
+    "scopes": [
+      "https://www.googleapis.com/auth/youtube.readonly"
+    ],
+    "api_service_name": "youtube",
+    "api_version": "v3",
+    "DEVELOPER_KEY": [
+      ""
+    ],
+    "order_by": "date",
+    "find_videos_for": [
+      "cricket"
+    ],
+    "type": "video",
+    "mongo_db_name": "youtube",
+    "meta_collection": "query_meta",
+    "data_collection": "feed",
+    "max_results": 50,
+    "update_interval": 5
+  }

@@ -1,9 +1,11 @@
+from googleapiclient.discovery import build
 from config import config
 from pymongo import UpdateOne
 import time
 from datetime import datetime
 import apiclient
-from googleapiclient.discovery import build
+
+
 class Video:
     def __init__(self, response):
         # Youtube api response parser
@@ -23,8 +25,8 @@ class Crawler:
     
     # initialising the configuration details of the search queries in the db
     def init_db(self):
-        self.__meta_coll.drop()
-        self.__data_coll.drop()
+        # meta_coll.drop()
+        # data_coll.drop()
         docs = []
         for query_string in config['find_videos_for']:  # Allowing multiple queries to be made
             # inserting current time as the first published_time/start_time for all the queries
@@ -32,6 +34,13 @@ class Crawler:
         # creating bulk updates
         upserts = [UpdateOne({'_id': doc['_id']}, {'$set': doc}, upsert=True) for doc in docs]
         self.__meta_coll.bulk_write(upserts)
+
+        # Create text index on title and description fields
+        if 'title_description' not in self.__data_coll.index_information().keys():
+            self.__data_coll.create_index([('title', 'text'), ('description', 'text')],
+                                          weights={'title': 2, 'description': 1},
+                                          name='title_description')
+        self.logger.info("DB iniitialized successfully")
 
     # function that is going to update the db with the video details
     def update_data(self):
