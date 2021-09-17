@@ -16,7 +16,13 @@ import pymongo
 from pymongo import UpdateOne
 
 from video import Video
+from utility import get_logger
+logger = None
 
+
+def set_logger():
+    global logger
+    logger = get_logger()
 
 # config file that stores all the search_term paramters and api keys
 config = json.load(open('config.json'))
@@ -40,7 +46,7 @@ def init_db():
     
 # function that is going to update the db with the video details
 def update_data():
-    searching on all the 
+    # searching on all the terms in db 
     for search_term in mongo_config.find():
         key_worked = False # Flag to track if the key worked or not
         for key in config['DEVELOPER_KEY']:
