@@ -16,6 +16,7 @@ def get_mongo_client():
 def get_logger():
     # Creating file logger
     logger = logging.getLogger("youtube")
+    print(logger)
     logger.setLevel(level=logging.INFO)
     sh = logging.StreamHandler()
     sh.setFormatter(logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s'))

@@ -27,6 +27,7 @@ def register_controllers():
 # Scheduler code to schedule the updation of the db every 10 seconds
 def set_scheduler():
     crawler = Crawler(app.db, logger)
+    print(crawler)
     sched = BackgroundScheduler(daemon=True)
     sched.add_job(crawler.update_data, 'interval', seconds=config['update_interval'])
     sched.start()
