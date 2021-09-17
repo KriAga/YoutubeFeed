@@ -40,7 +40,7 @@ class Crawler:
             self.__data_coll.create_index([('title', 'text'), ('description', 'text')],
                                           weights={'title': 2, 'description': 1},
                                           name='title_description')
-        self.logger.info("DB iniitialized successfully")
+        self.logger.info("DB initialized successfully")
 
     # function that is going to update the db with the video details
     def update_data(self):
