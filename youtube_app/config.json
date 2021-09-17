@@ -11,6 +11,6 @@
     "mongo_coll_data": "query_data",
     "mongo_db_name":"youtube_feed",
     "max_results":50,
-    "update_interval": 5
+    "update_interval": 10
 
 }
