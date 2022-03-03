@@ -21,7 +21,7 @@ class Youtube(Resource):
         search = request.args.get("search", None)
         videos_per_page = int(request.args.get("videos_per_page"))
         page = int(request.args.get("page"))
-
+        print(page)
         data, status_code = youtube_handler.get_videos(search, page, videos_per_page)
         return Response(response=json.dumps(data), status=status_code)
 
